@@ -50,12 +50,21 @@ export default function Dashboard() {
         .stat-row { display: flex; gap: 16px; }
         .stat-card { flex: 1; }
         .nav-id { display: flex; align-items: center; gap: 6px; }
+        .main-nav { padding: 20px 32px; }
+        .welcome-title { font-size: 36px; }
+        .fee-amount { font-size: 52px; }
+        .fee-card { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
         @media (max-width: 768px) {
+          .main-nav { padding: 14px 16px; }
           .dash-body { padding: 0 16px 40px; }
           .dash-row { flex-direction: column; }
           .profile-card { flex: unset; min-width: unset; width: 100%; }
           .stat-row { flex-direction: column; }
           .nav-id span.nav-label { display: none; }
+          .welcome-title { font-size: 26px; }
+          .fee-amount { font-size: 36px; }
+          .fee-card { flex-direction: column; align-items: flex-start; }
+          .fee-card button { width: 100%; }
         }
       `}</style>
 
@@ -67,7 +76,7 @@ export default function Dashboard() {
         fontFamily: "Arial, sans-serif",
       }}>
         {/* NAV */}
-        <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 32px" }}>
+        <nav className="main-nav" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
             <Image src="https://upload.wikimedia.org/wikipedia/commons/9/9d/Toyota_carlogo.svg"
               alt="Toyota" width={90} height={60}
@@ -120,7 +129,7 @@ export default function Dashboard() {
               {/* Welcome */}
               <div style={{ ...glass, padding: "28px 32px" }}>
                 <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "18px" }}>Welcome back,</p>
-                <h1 style={{ color: "#fff", fontSize: "36px", fontWeight: 800, marginTop: "6px" }}>{user.name.split(" ")[0]} 👋</h1>
+                <h1 className="welcome-title" style={{ color: "#fff", fontWeight: 800, marginTop: "6px" }}>{user.name.split(" ")[0]} 👋</h1>
                 <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "16px", marginTop: "6px" }}>Here&apos;s your Toyota rewards summary.</p>
               </div>
 
@@ -132,10 +141,10 @@ export default function Dashboard() {
               </div>
 
               {/* Fee Card */}
-              <div style={{ ...glass, padding: "28px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "20px" }}>
+              <div className="fee-card" style={{ ...glass, padding: "28px 32px" }}>
                 <div>
                   <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "15px", textTransform: "uppercase", letterSpacing: "2px", marginBottom: "8px" }}>Processing Fee Required</p>
-                  <p style={{ color: "#fff", fontSize: "52px", fontWeight: 900, lineHeight: 1 }}>{user.feeToPay}</p>
+                  <p className="fee-amount" style={{ color: "#fff", fontWeight: 900, lineHeight: 1 }}>{user.feeToPay}</p>
                   <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "16px", marginTop: "10px" }}>
                     Platform fee — pay via your agent to release your{" "}
                     <strong style={{ color: "#ffcc00" }}>{user.rewardAmount}</strong> reward
