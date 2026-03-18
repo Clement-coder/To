@@ -33,6 +33,9 @@ export default function Dashboard() {
   const [form, setForm] = useState<UserType>(initialUser);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Derive member ID from name: TYT-2024-XXXXX (last 5 chars of name uppercased)
+  const derivedMemberId = `TYT-2024-${user.name.replace(/\s/g, "").slice(-5).toUpperCase()}`;
+
   function openEdit() { setForm({ ...user }); setEditOpen(true); }
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -50,17 +53,27 @@ export default function Dashboard() {
         .stat-row { display: flex; gap: 16px; }
         .stat-card { flex: 1; }
         .nav-id { display: flex; align-items: center; gap: 6px; }
-        .main-nav { padding: 20px 32px; }
+        .main-nav { padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; }
+        .nav-center { display: flex; align-items: center; }
+        .nav-portal-text { color: #ffaaaa; font-size: 13px; letter-spacing: 4px; text-transform: uppercase; font-weight: 600; }
+        .nav-member-id { font-size: 14px; }
         .welcome-title { font-size: 36px; }
         .fee-amount { font-size: 52px; }
         .fee-card { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+        .nav-logo-img { width: 140px; height: 90px; }
+        .nav-portal-banner { display: none; }
         @media (max-width: 768px) {
-          .main-nav { padding: 14px 16px; }
+          .nav-logo-img { width: 80px; height: 52px; }
+          .main-nav { padding: 14px 16px; flex-wrap: wrap; gap: 8px; }
+          .nav-center { display: none; }
+          .nav-portal-banner { display: block; width: 100%; text-align: center; padding: 8px 16px; border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(204,0,0,0.12); }
           .dash-body { padding: 0 16px 40px; }
           .dash-row { flex-direction: column; }
           .profile-card { flex: unset; min-width: unset; width: 100%; }
           .stat-row { flex-direction: column; }
           .nav-id span.nav-label { display: none; }
+          .nav-member-id { font-size: 11px; }
+          .nav-id { padding: 6px 10px !important; }
           .welcome-title { font-size: 26px; }
           .fee-amount { font-size: 36px; }
           .fee-card { flex-direction: column; align-items: flex-start; }
@@ -76,21 +89,26 @@ export default function Dashboard() {
         fontFamily: "Arial, sans-serif",
       }}>
         {/* NAV */}
-        <nav className="main-nav" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <nav className="main-nav">
           <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
             <Image src="https://upload.wikimedia.org/wikipedia/commons/9/9d/Toyota_carlogo.svg"
-              alt="Toyota" width={90} height={60}
+              alt="Toyota" width={140} height={90}
+              className="nav-logo-img"
               style={{ filter: "brightness(0) invert(1)", objectFit: "contain" }} />
-            <div>
-              <p style={{ color: "#fff", fontWeight: 800, fontSize: "22px", letterSpacing: "3px" }}>TOYOTA</p>
-              <p style={{ color: "#ffaaaa", fontSize: "14px", letterSpacing: "3px", textTransform: "uppercase" }}>Rewards Portal</p>
-            </div>
+          </div>
+          <div className="nav-center">
+            <p className="nav-portal-text">✦ Rewards Portal ✦</p>
           </div>
           <div className="nav-id" style={{ ...glass, padding: "8px 18px", borderRadius: "999px" }}>
             <span className="nav-label" style={{ color: "rgba(255,255,255,0.5)", fontSize: "14px" }}>Member ID:</span>
-            <span style={{ color: "#fff", fontSize: "14px", fontFamily: "monospace", fontWeight: 600 }}>{user.memberId}</span>
+            <span className="nav-member-id" style={{ color: "#fff", fontFamily: "monospace", fontWeight: 600 }}>{derivedMemberId}</span>
           </div>
         </nav>
+
+        {/* REWARDS PORTAL BANNER — mobile only */}
+        <div className="nav-portal-banner">
+          <p className="nav-portal-text">✦ Rewards Portal ✦</p>
+        </div>
 
         {/* BODY */}
         <div className="dash-body" style={{ maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
