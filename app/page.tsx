@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Mail, Globe, CalendarDays, Trophy, Gem, MapPin, X, Pencil, UserRound, Camera } from "lucide-react";
 
@@ -27,14 +27,27 @@ const glass: React.CSSProperties = {
 
 type UserType = typeof initialUser;
 
+const STORAGE_KEY = "toyota_user";
+
 export default function Dashboard() {
-  const [user, setUser] = useState<UserType>(initialUser);
+  const [user, setUser] = useState<UserType>(() => {
+    if (typeof window === "undefined") return initialUser;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? { ...initialUser, ...JSON.parse(saved) } : initialUser;
+    } catch { return initialUser; }
+  });
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState<UserType>(initialUser);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Derive member ID from name: TYT-2024-XXXXX (last 5 chars of name uppercased)
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
   const derivedMemberId = `TYT-2024-${user.name.replace(/\s/g, "").slice(-5).toUpperCase()}`;
+
+  // Persist user to localStorage on every change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+  }, [user]);
 
   function openEdit() { setForm({ ...user }); setEditOpen(true); }
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -168,7 +181,7 @@ export default function Dashboard() {
                     <strong style={{ color: "#ffcc00" }}>{user.rewardAmount}</strong> reward
                   </p>
                 </div>
-                <button style={{ padding: "14px 36px", borderRadius: "12px", background: "rgba(255,255,255,0.1)", color: "#fff", fontSize: "15px", fontWeight: 600, border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer", whiteSpace: "nowrap" }}>
+                <button onClick={() => setInvoiceOpen(true)} style={{ padding: "14px 36px", borderRadius: "12px", background: "rgba(255,255,255,0.1)", color: "#fff", fontSize: "15px", fontWeight: 600, border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer", whiteSpace: "nowrap" }}>
                   View Invoice
                 </button>
               </div>
@@ -233,6 +246,83 @@ export default function Dashboard() {
               <button onClick={handleSave} style={{ flex: 1, padding: "14px", borderRadius: "12px", background: "linear-gradient(135deg,#cc0000,#ff4444)", color: "#fff", fontWeight: 700, border: "none", cursor: "pointer", fontSize: "15px", boxShadow: "0 4px 15px rgba(204,0,0,0.4)" }}>
                 Save Changes
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* INVOICE MODAL */}
+      {invoiceOpen && (
+        <div onClick={(e) => e.target === e.currentTarget && setInvoiceOpen(false)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", backdropFilter: "blur(10px)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px", overflowY: "auto" }}>
+          <div style={{ width: "100%", maxWidth: "520px", background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", overflow: "hidden" }}>
+
+            {/* Red top bar */}
+            <div style={{ background: "linear-gradient(135deg,#cc0000,#ff2222)", padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ background: "#fff", borderRadius: "8px", padding: "6px 12px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Image src="https://upload.wikimedia.org/wikipedia/commons/9/9d/Toyota_carlogo.svg" alt="Toyota" width={90} height={60} style={{ objectFit: "contain", display: "block" }} />
+                </div>
+              </div>
+              <button onClick={() => setInvoiceOpen(false)} style={{ background: "rgba(255,255,255,0.15)", border: "none", borderRadius: "50%", width: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff" }}><X size={18} /></button>
+            </div>
+
+            <div style={{ padding: "28px 24px" }}>
+
+              {/* Invoice meta */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px", flexWrap: "wrap", gap: "12px" }}>
+                <div>
+                  <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase" }}>Invoice Number</p>
+                  <p style={{ color: "#fff", fontSize: "20px", fontWeight: 800, marginTop: "4px", fontFamily: "monospace" }}>{derivedMemberId}</p>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase" }}>Date Issued</p>
+                  <p style={{ color: "#fff", fontSize: "15px", fontWeight: 600, marginTop: "4px" }}>{user.joinDate}</p>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div style={{ height: "1px", background: "rgba(255,255,255,0.08)", marginBottom: "24px" }} />
+
+              {/* Bill To */}
+              <div style={{ marginBottom: "24px" }}>
+                <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase", marginBottom: "10px" }}>Bill To</p>
+                <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "16px" }}>
+                  <p style={{ color: "#fff", fontWeight: 700, fontSize: "16px" }}>{user.name}</p>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "13px", marginTop: "6px" }}>{user.email}</p>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "13px", marginTop: "2px" }}>{user.country} &nbsp;·&nbsp; {user.rewardTier}</p>
+                </div>
+              </div>
+
+              {/* Line item table */}
+              <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 16px", background: "rgba(255,255,255,0.06)" }}>
+                  <span style={{ color: "rgba(255,255,255,0.45)", fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase" }}>Description</span>
+                  <span style={{ color: "rgba(255,255,255,0.45)", fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase" }}>Amount</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 16px", gap: "12px" }}>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ color: "#fff", fontSize: "15px", fontWeight: 600 }}>Platform Processing Fee</p>
+                    <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "13px", marginTop: "4px" }}>Required to release reward of <span style={{ color: "#ffcc00" }}>{user.rewardAmount}</span></p>
+                  </div>
+                  <p style={{ color: "#ffcc00", fontWeight: 800, fontSize: "20px", whiteSpace: "nowrap" }}>{user.feeToPay}</p>
+                </div>
+              </div>
+
+              {/* Total */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 20px", background: "linear-gradient(135deg,rgba(204,0,0,0.2),rgba(204,0,0,0.08))", borderRadius: "12px", border: "1px solid rgba(204,0,0,0.35)", marginBottom: "20px" }}>
+                <div>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "12px", letterSpacing: "2px", textTransform: "uppercase" }}>Total Due</p>
+                  <p style={{ color: "#fff", fontWeight: 900, fontSize: "30px", marginTop: "2px" }}>{user.feeToPay}</p>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px" }}>Reward on release</p>
+                  <p style={{ color: "#ffcc00", fontWeight: 800, fontSize: "20px" }}>{user.rewardAmount}</p>
+                </div>
+              </div>
+
+              <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "12px", textAlign: "center", lineHeight: "1.6" }}>
+                This invoice is issued by Toyota Rewards Portal.<br />Pay via your assigned agent to release your reward.
+              </p>
             </div>
           </div>
         </div>
